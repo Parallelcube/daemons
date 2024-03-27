@@ -1,10 +1,11 @@
 import signal 
-from service import Service
+from pcube.service import Service
+from pcube.logger import log
 
 service = None
 
 def cancel_callback(signum, frame):
-    print(f'python: Signal {signum} reveived')
+    log(f'Signal {signum} reveived')
     if service:
         service.stop_listener()
 

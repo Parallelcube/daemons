@@ -1,5 +1,7 @@
 from enum import Enum
 
+from pcube.logger import log
+
 class EExitCode(Enum):
     SUCCESS = 0
     FAIL = 1
@@ -18,9 +20,9 @@ class Service:
     def run(self) -> EExitCode:
         exit_code = EExitCode.FAIL
         if self.start_listener():
-            print("python: Service listening")
+            log("Service listening")
             exit_code = EExitCode.SUCCESS
         else:
-            print("python: Unable to init listener")
+            log("Unable to init listener")
         return exit_code
         

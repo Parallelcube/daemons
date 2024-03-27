@@ -1,5 +1,8 @@
 #include "Service.h"
 
+#include "Logger.h"
+#include "MQHandler.h"
+
 #include <iostream>
 
 using namespace pcube;
@@ -17,12 +20,12 @@ int Service::run()
     int exit_code = EXIT_FAILURE;
     if (start_listener())
     {
-        std::cout << "cpp: Service listening" << std::endl;
+        log("Service listening");
         exit_code = EXIT_SUCCESS;
     }
     else
     {
-        std::cout << "cpp: Unable to init listener" << std::endl;
+        log("Unable to init listener");
     }
     return exit_code;
 }

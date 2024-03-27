@@ -1,3 +1,5 @@
+use super::{logger::log, mq_handler::MQHandler};
+
 pub enum EExitCode 
 {
     SUCCESS,
@@ -7,12 +9,14 @@ pub enum EExitCode
 pub struct Service 
 {
     listening: bool,
+    mq_handler: MQHandler
 }
 
-impl Service {
+impl Service 
+{
     pub fn new() -> Service 
     {
-        Service {listening: false}
+        Service {listening: false, mq_handler: MQHandler()}
     }
 
     pub fn run(&mut self) -> EExitCode 
@@ -20,12 +24,12 @@ impl Service {
         let mut exit_code = EExitCode::FAIL;
         if self.start_listener()
         {
-            println!("rust: Service listening");
+            log("Service listening");
             exit_code = EExitCode::SUCCESS
         }
         else
         {
-            println!("rust: Unable to init listener");
+            log("rust: Unable to init listener");
         }
         return exit_code
     }
