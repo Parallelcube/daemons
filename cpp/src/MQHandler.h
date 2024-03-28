@@ -13,8 +13,8 @@ namespace pcube
 
         int connect(const std::string& mq_request_name, const std::string& mq_response_name);
         int disconnect();
-        int send_wait(const char* buffer, size_t buffer_size) const;
-        int receive_wait(char* buffer, ssize_t& num_bytes, const size_t buffer_size) const;
+        int send_wait(const std::string& message) const;
+        int receive_wait(std::string& message) const;
 
     private:
         mqd_t _mq_request;

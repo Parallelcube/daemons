@@ -3,10 +3,12 @@
 #include "Logger.h"
 
 #include <fcntl.h>
+#include <string.h>
 
 using namespace pcube;
 
-constexpr mqd_t MQ_ERROR = (mqd_t)-1; 
+constexpr mqd_t MQ_ERROR = (mqd_t)-1;
+constexpr long MAX_MESSAGE_SIZE = 512;
 
 MQHandler::MQHandler():_mq_request(MQ_ERROR),_mq_response(MQ_ERROR)
 {
@@ -19,16 +21,19 @@ MQHandler::~MQHandler()
 int MQHandler::connect(const std::string& mq_request_name, const std::string& mq_response_name)
 {
     int exit_code = EXIT_SUCCESS;
-    _mq_request = mq_open(mq_request_name.c_str(), O_RDONLY, 0600);
+    mq_attr mq_attributes;
+    mq_attributes.mq_maxmsg = 1;
+    mq_attributes.mq_msgsize = MAX_MESSAGE_SIZE;
+    _mq_request = mq_open(mq_request_name.c_str(), O_CREAT | O_WRONLY, 0600, &mq_attributes);
     if (_mq_request == MQ_ERROR)
     {
         log("Error mq_open with mq_request ("+mq_request_name+")");
         exit_code = EXIT_FAILURE;
     }
 
-    if (!exit_code)
+    if (exit_code == EXIT_SUCCESS)
     {
-        _mq_response = mq_open(mq_request_name.c_str(), O_RDONLY, 0600);
+        _mq_response = mq_open(mq_response_name.c_str(), O_CREAT | O_RDONLY, 0600, &mq_attributes);
         if (_mq_response == MQ_ERROR)
         {
             log("Error mq_open with mq_response ("+mq_response_name+")");
@@ -62,25 +67,32 @@ int MQHandler::disconnect()
     return exit_code;
 }
 
-int MQHandler::send_wait(const char* buffer, size_t buffer_size) const
+int MQHandler::send_wait(const std::string& message) const
 {
     int exit_code = EXIT_SUCCESS;
-    int return_code = mq_send(_mq_response, buffer, buffer_size, 0);
+    log(std::string("Sending message '") + message + "'");
+    int return_code = mq_send(_mq_request, message.data(), message.size(), 0);
     if (return_code == -1)
     {
-        log("Error mq_send");
+        log(std::string("Error mq_send") + strerror(errno));
         exit_code = EXIT_FAILURE;
     }
     return exit_code;
 }
 
-int MQHandler::receive_wait(char* buffer, ssize_t& num_bytes, const size_t buffer_size) const
+int MQHandler::receive_wait(std::string& message) const
 {
     int exit_code = EXIT_SUCCESS;
-    num_bytes = mq_receive(_mq_request, buffer, buffer_size, 0);
-    if (num_bytes == -1)
+    message.resize(MAX_MESSAGE_SIZE);
+    ssize_t num_bytes = mq_receive(_mq_response, message.data(), message.size(), 0);
+    if (num_bytes != -1)
     {
-        log("Error mq_receive");
+        message.resize(num_bytes);
+        log(std::string("Received message '") + message + "'");
+    }
+    else
+    {
+        log(std::string("Error mq_receive") + strerror(errno));
         exit_code = EXIT_FAILURE;
     }
     return exit_code;

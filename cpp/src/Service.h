@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MQHandler.h"
+
 namespace pcube
 {
     class Service
@@ -14,6 +16,7 @@ namespace pcube
         bool start_listener();
         void stop_listener();
 
-        bool _listening;
+        bool        _listening;
+        MQHandler   _mq_handler;
     };
 }
