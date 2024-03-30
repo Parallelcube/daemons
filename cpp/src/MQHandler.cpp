@@ -92,7 +92,9 @@ int MQHandler::receive_wait(std::string& message) const
     }
     else
     {
-        log(std::string("Error mq_receive") + strerror(errno));
+        std::string error_message(strerror(errno));
+        log(std::string("Error mq_receive") + error_message);
+        message = error_message;
         exit_code = EXIT_FAILURE;
     }
     return exit_code;

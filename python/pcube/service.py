@@ -10,8 +10,10 @@ class Service:
     def start_listener(self) -> bool:
         self._listening = True
         exit_code = self._mq_handler.connect("/mq_queue_master", "/mq_queue_slave")
-        log("Service start listening")
-        return exit_code == EExitCode.SUCCESS
+        if exit_code == EExitCode.SUCCESS:
+            log("Service start listening")
+            return True
+        return False
 
     def stop_listener(self):
         self._listening = False

@@ -1,2 +1,2 @@
 #!/bin/bash
-../rust/build/main
+../rust/target/debug/rsservice

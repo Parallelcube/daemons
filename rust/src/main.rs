@@ -1,8 +1,8 @@
 mod pcube;
 
 use std::process::ExitCode;
+use pcube::enums::EExitCode;
 use pcube::service::Service;
-use pcube::service::EExitCode;
 
 fn main() -> ExitCode
 {

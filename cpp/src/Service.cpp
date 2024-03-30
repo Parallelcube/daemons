@@ -19,8 +19,12 @@ bool Service::start_listener()
 {
     _listening = true;
     int exit_code = _mq_handler.connect("/mq_queue_slave", "/mq_queue_master");
-    log("Service start listening");
-    return exit_code == EXIT_SUCCESS;
+    if (exit_code == EXIT_SUCCESS)
+    {
+        log("Service start listening");
+        return true;
+    }
+    return false;
 }
 
 void Service::stop_listener()

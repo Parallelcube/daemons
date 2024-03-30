@@ -4,6 +4,8 @@ from pcube.enums import EExitCode
 from pcube.logger import log
 
 class MQHandler:
+    MAX_MESSAGE_SIZE = 512
+
     def __init__(self):
         self.mq_request = None
         self.mq_response = None
@@ -12,7 +14,7 @@ class MQHandler:
         exit_code = EExitCode.SUCCESS
         self.mq_request = MessageQueue(mq_request_name, 
                                         O_CREAT | O_WRONLY, 
-                                        max_message_size=512, 
+                                        max_message_size=MQHandler.MAX_MESSAGE_SIZE, 
                                         max_messages=1, 
                                         read = False, 
                                         write = True)
@@ -22,7 +24,7 @@ class MQHandler:
 
         self.mq_response = MessageQueue(mq_response_name, 
                                         O_CREAT | O_RDONLY, 
-                                        max_message_size=512, 
+                                        max_message_size=MQHandler.MAX_MESSAGE_SIZE, 
                                         max_messages=1, 
                                         read = True, 
                                         write = False)
@@ -49,7 +51,7 @@ class MQHandler:
             self.mq_request.send(message=message, timeout=None)
             return EExitCode.SUCCESS
         except Exception as ex:
-            log(f"ERROR send_wait {ex}")
+            log(f"Error mq_send {ex}")
             return EExitCode.FAIL
 
     def receive_wait(self) -> tuple[str, EExitCode]:
@@ -59,6 +61,6 @@ class MQHandler:
             log(f"Received message '{decoded_message}'")
             return decoded_message, EExitCode.SUCCESS
         except Exception as ex:
-            log(f"ERROR received_wait {ex}")
-            return None, EExitCode.FAIL
+            log(f"Error mq_receive {ex}")
+            return f"{ex}", EExitCode.FAIL
         
