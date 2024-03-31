@@ -2,9 +2,10 @@ extern crate nix;
 
 use super::logger::log;
 use super::enums::EExitCode;
+use nix::errno::Errno;
 use nix::mqueue::{MqdT, mq_open, mq_close, mq_send, mq_receive, MQ_OFlag, MqAttr};
+use std::os::unix::io::{AsRawFd, FromRawFd};
 use nix::sys::stat::Mode;
-use std::borrow::Borrow;
 use std::str;
 
 const MAX_MESSAGE_SIZE: i64 = 512;
@@ -60,20 +61,18 @@ impl MQHandler
     pub fn disconnect(&mut self) -> EExitCode 
     {
         let exit_code = EExitCode::SUCCESS;
-        if self.mq_request.is_some()
+
+        let _ = match &self.mq_request
         {
-            match mq_close(self.mq_request)
-            {
-                Ok(_) => {}
-                Err(_) => {}
-            }
-            self.mq_request = None;
-        }
-        // if self.mq_response.is_some()
-        // {
-        //     mq_close(self.mq_response.unwrap()).unwrap();
-        //     self.mq_response = None;
-        // }
+            Some(queue) => unsafe {mq_close(FromRawFd::from_raw_fd(queue.as_raw_fd()))},
+            None => Err(Errno::UnknownErrno)
+        };
+
+        let _ = match &self.mq_response
+        {
+            Some(queue) => unsafe {mq_close(FromRawFd::from_raw_fd(queue.as_raw_fd()))},
+            None => Err(Errno::UnknownErrno)
+        };
         return exit_code;
     }
 
