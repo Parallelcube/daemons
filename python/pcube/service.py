@@ -1,17 +1,19 @@
 from pcube.logger import log
 from pcube.enums import EExitCode
 from pcube.mq_handler import MQHandler
+from pcube.service_config import ServiceConfig
 
 class Service:
-    def __init__(self):
+    def __init__(self, config: ServiceConfig):
+        self._config: ServiceConfig = config
         self._listening = False
         self._mq_handler = MQHandler()
 
     def start_listener(self) -> bool:
         self._listening = True
-        exit_code = self._mq_handler.connect("/mq_queue_master", "/mq_queue_slave")
+        exit_code = self._mq_handler.connect(self._config.q_master_name, self._config.q_slave_name)
         if exit_code == EExitCode.SUCCESS:
-            log("Service start listening")
+            log(f"Service start listening : master({self._config.is_master})")
             return True
         return False
 
@@ -23,10 +25,15 @@ class Service:
     def run(self) -> EExitCode:
         exit_code = EExitCode.SUCCESS
         if self.start_listener():
-            self._mq_handler.send_wait("task-1")
+
+            if self._config.is_master:
+                self._mq_handler.send_wait("task-1")
+
             while self._listening:
                 message, status = self._mq_handler.receive_wait()
                 if status == EExitCode.SUCCESS:
+                    if not self._config.is_master:
+                        self._mq_handler.send_wait(f"{message} processed")
                     self.stop_listener()
                 else:
                     exit_code = EExitCode.FAIL

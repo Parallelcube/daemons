@@ -45,11 +45,14 @@ class MQHandler:
             self.mq_response = None
         return exit_code
     
-    def send_wait(self, message) -> EExitCode:
+    def send_wait(self, message: str) -> EExitCode:
         try:
             log(f"Sending message '{message}'")
             self.mq_request.send(message=message, timeout=None)
             return EExitCode.SUCCESS
+        except KeyboardInterrupt as ex:
+            log(f"Safe KeyboardInterrupt")
+            return EExitCode.FAIL
         except Exception as ex:
             log(f"Error mq_send {ex}")
             return EExitCode.FAIL
@@ -60,6 +63,9 @@ class MQHandler:
             decoded_message = message.decode()
             log(f"Received message '{decoded_message}'")
             return decoded_message, EExitCode.SUCCESS
+        except KeyboardInterrupt as ex:
+            log(f"Safe KeyboardInterrupt")
+            return f"{ex}", EExitCode.FAIL
         except Exception as ex:
             log(f"Error mq_receive {ex}")
             return f"{ex}", EExitCode.FAIL
