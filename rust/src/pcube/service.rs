@@ -18,7 +18,7 @@ impl Service
     pub fn start_listener(&mut self) -> bool 
     {
         self.listening = true;
-        match self.mq_handler.connect("/mq_queue_slave", "/mq_queue_master")
+        match self.mq_handler.connect("/mq_queue_worker", "/mq_queue_host")
         {
             EExitCode::SUCCESS => 
             {

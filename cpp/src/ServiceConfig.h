@@ -12,12 +12,12 @@ namespace pcube
         ServiceConfig(std::vector<std::string>& args);
         virtual ~ServiceConfig();
 
-        bool        is_master;
-        std::string q_master_name;
-        std::string q_slave_name;
+        bool        is_host;
+        std::string q_name_host;
+        std::string q_name_worker;
 
     private:
-        void match_is_master(std::vector<std::string>& args);
+        void match_is_host(std::vector<std::string>& args);
 
     };
 }

@@ -5,21 +5,21 @@
 
 using namespace pcube;
 
-constexpr const char* SYSTEM_QUEUE_MASTER_NAME = "/mq_queue_master";
-constexpr const char* SYSTEM_QUEUE_SLAVE_NAME = "/mq_queue_slave";
+constexpr const char* SYSTEM_HOST_QUEUE_NAME = "/mq_queue_host";
+constexpr const char* SYSTEM_WORKER_QUEUE_NAME = "/mq_queue_worker";
 
-ServiceConfig::ServiceConfig(std::vector<std::string>& args):is_master(false)
+ServiceConfig::ServiceConfig(std::vector<std::string>& args):is_host(false)
 {
-    match_is_master(args);
-    if (is_master)
+    match_is_host(args);
+    if (is_host)
     {
-        q_master_name = SYSTEM_QUEUE_MASTER_NAME;
-        q_slave_name = SYSTEM_QUEUE_SLAVE_NAME;
+        q_name_host = SYSTEM_HOST_QUEUE_NAME;
+        q_name_worker = SYSTEM_WORKER_QUEUE_NAME;
     }
     else
     {
-        q_master_name = SYSTEM_QUEUE_SLAVE_NAME;
-        q_slave_name = SYSTEM_QUEUE_MASTER_NAME;
+        q_name_host = SYSTEM_WORKER_QUEUE_NAME;
+        q_name_worker = SYSTEM_HOST_QUEUE_NAME;
     }
 }
 
@@ -27,12 +27,12 @@ ServiceConfig::~ServiceConfig()
 {
 }
 
-void ServiceConfig::match_is_master(std::vector<std::string>& args)
+void ServiceConfig::match_is_host(std::vector<std::string>& args)
 {
-    auto it = std::find(args.begin(), args.end(), "--master");
+    auto it = std::find(args.begin(), args.end(), "--host");
     if (it != args.end())
     {
-        is_master = true;
+        is_host = true;
         it = args.erase(it);
     }
 }

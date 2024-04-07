@@ -11,9 +11,9 @@ class Service:
 
     def start_listener(self) -> bool:
         self._listening = True
-        exit_code = self._mq_handler.connect(self._config.q_master_name, self._config.q_slave_name)
+        exit_code = self._mq_handler.connect(self._config.q_name_host, self._config.q_name_worker)
         if exit_code == EExitCode.SUCCESS:
-            log(f"Service start listening : master({self._config.is_master})")
+            log(f"Service start listening : host({self._config.is_host})")
             return True
         return False
 
@@ -26,13 +26,13 @@ class Service:
         exit_code = EExitCode.SUCCESS
         if self.start_listener():
 
-            if self._config.is_master:
+            if self._config.is_host:
                 self._mq_handler.send_wait("task-1")
 
             while self._listening:
                 message, status = self._mq_handler.receive_wait()
                 if status == EExitCode.SUCCESS:
-                    if not self._config.is_master:
+                    if not self._config.is_host:
                         self._mq_handler.send_wait(f"{message} processed")
                     self.stop_listener()
                 else:

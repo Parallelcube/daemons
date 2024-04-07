@@ -1,19 +1,19 @@
 class ServiceConfig:
-    SYSTEM_QUEUE_MASTER_NAME = "/mq_queue_master"
-    SYSTEM_QUEUE_SLAVE_NAME = "/mq_queue_slave"
+    SYSTEM_HOST_QUEUE_NAME = "/mq_queue_host"
+    SYSTEM_WORKER_QUEUE_NAME = "/mq_queue_worker"
     def __init__(self, args: list):
-        self.is_master = False
-        self._match_is_master(args)
-        if self.is_master:
-            self.q_master_name = ServiceConfig.SYSTEM_QUEUE_MASTER_NAME
-            self.q_slave_name = ServiceConfig.SYSTEM_QUEUE_SLAVE_NAME
+        self.is_host = False
+        self._match_is_host(args)
+        if self.is_host:
+            self.q_name_host = ServiceConfig.SYSTEM_HOST_QUEUE_NAME
+            self.q_name_worker = ServiceConfig.SYSTEM_WORKER_QUEUE_NAME
         else:
-            self.q_master_name = ServiceConfig.SYSTEM_QUEUE_SLAVE_NAME
-            self.q_slave_name = ServiceConfig.SYSTEM_QUEUE_MASTER_NAME
+            self.q_name_host = ServiceConfig.SYSTEM_WORKER_QUEUE_NAME
+            self.q_name_worker = ServiceConfig.SYSTEM_HOST_QUEUE_NAME
 
-    def _match_is_master(self, args: list):
+    def _match_is_host(self, args: list):
         for arg in args:
-            if arg == "--master":
-                self.is_master = True
+            if arg == "--host":
+                self.is_host = True
                 args.remove(arg)
                 break

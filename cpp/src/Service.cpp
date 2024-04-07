@@ -24,10 +24,10 @@ std::string bool_to_string(bool value)
 bool Service::start_listener()
 {
     _listening = true;
-    int exit_code = _mq_handler.connect(_config.q_master_name, _config.q_slave_name);
+    int exit_code = _mq_handler.connect(_config.q_name_host, _config.q_name_worker);
     if (exit_code == EXIT_SUCCESS)
     {
-        log("Service start listening : master("+bool_to_string(_config.is_master)+")");
+        log("Service start listening : host("+bool_to_string(_config.is_host)+")");
         return true;
     }
     return false;
@@ -45,7 +45,7 @@ int Service::run()
     int exit_code = EXIT_SUCCESS;
     if (start_listener())
     {
-        if (_config.is_master)
+        if (_config.is_host)
         {
             _mq_handler.send_wait("task-1");
         }
@@ -56,7 +56,7 @@ int Service::run()
             int status = _mq_handler.receive_wait(message);
             if (status == EXIT_SUCCESS)
             {
-                if (!_config.is_master)
+                if (!_config.is_host)
                 {
                     message = message + " processed";
                     _mq_handler.send_wait(message);

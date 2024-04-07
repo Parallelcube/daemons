@@ -20,13 +20,13 @@ This repository contains the implementation of a same service using different la
 # Scripts
 We have multiple scripts to build and test the different services
 
-## C++
-- buildcpp.sh
-- runcpp.sh
+**Python**
+- **runpython.sh** : Start service as host
 
-## Python
-- runpython.sh
+**C++**
+- **buildcpp.sh** : Compile Cpp code
+- **runcpp.sh** : Start service as host
 
-## Rust
-- buildrust.sh
-- runrust.sh
+**Rust**
+- **buildrust.sh** : Compile Rust code
+- **runrust.sh** : Start service as host
