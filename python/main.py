@@ -1,7 +1,6 @@
 import sys
 import signal 
 
-from pcube.cli import Cli
 from pcube.service_config import ServiceConfig
 from pcube.service import Service
 from pcube.logger import log
@@ -16,9 +15,7 @@ def cancel_callback(signum, frame):
 signal.signal(signal.SIGTERM, cancel_callback)
 
 if __name__ == "__main__":
-    cli = Cli()
-    cli.parse_args(sys.argv[1:])
-
-    service = Service(ServiceConfig(cli.is_master))
+    cli_args = sys.argv[1:].copy()
+    service = Service(ServiceConfig(cli_args))
     exit_code = service.run()
     sys.exit(exit_code.value)

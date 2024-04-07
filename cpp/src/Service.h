@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ServiceConfig.h"
 #include "MQHandler.h"
 
 namespace pcube
@@ -7,7 +8,7 @@ namespace pcube
     class Service
     {
     public:
-        Service();
+        Service(const ServiceConfig& config);
         virtual ~Service();
 
         int run();
@@ -16,7 +17,8 @@ namespace pcube
         bool start_listener();
         void stop_listener();
 
-        bool        _listening;
-        MQHandler   _mq_handler;
+        const ServiceConfig&    _config;
+        bool                    _listening;
+        MQHandler               _mq_handler;
     };
 }
