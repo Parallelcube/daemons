@@ -21,12 +21,25 @@ This repository contains the implementation of a same service using different la
 We have multiple scripts to build and test the different services
 
 **Python**
-- **runpython.sh** : Start service as host
+- **runpython.sh** : activate python virtual environment + Start service as host
+```bash
+#!/bin/bash
+. ../venv/bin/activate
+python3.11 ../python/main.py --host
+```
 
 **C++**
 - **buildcpp.sh** : Compile Cpp code
-- **runcpp.sh** : Start service as host
+- **runcpp.sh** : Start service as worker
+```bash
+#!/bin/bash
+../cpp/build/cppservice
+```
 
 **Rust**
 - **buildrust.sh** : Compile Rust code
-- **runrust.sh** : Start service as host
+- **runrust.sh** : Start service as worker
+```bash
+#!/bin/bash
+../rust/target/debug/rsservice
+```
