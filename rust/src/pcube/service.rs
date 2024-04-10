@@ -38,7 +38,7 @@ impl Service
     {
         self.listening = false;
         log("Service stop listening");
-        self.mq_handler.disconnect();
+        self.mq_handler.disconnect(self.config.is_host);
     }
 
     pub fn run(&mut self) -> EExitCode 

@@ -3,7 +3,7 @@ extern crate nix;
 use super::logger::log;
 use super::enums::EExitCode;
 use nix::errno::Errno;
-use nix::mqueue::{MqdT, mq_open, mq_close, mq_send, mq_receive, MQ_OFlag, MqAttr};
+use nix::mqueue::{MqdT, mq_open, mq_close, mq_send, mq_receive, mq_unlink, MQ_OFlag, MqAttr};
 use std::os::unix::io::{AsRawFd, FromRawFd};
 use nix::sys::stat::Mode;
 use std::str;
@@ -14,13 +14,15 @@ pub struct MQHandler
 {
     mq_request: Option<MqdT>,
     mq_response: Option<MqdT>,
+    mq_request_name: Option<String>,
+    mq_response_name: Option<String>,
 }
 
 impl MQHandler 
 {
     pub fn new() -> Self 
     {
-        Self {mq_request: None, mq_response: None}
+        Self {mq_request: None, mq_response: None, mq_request_name: None, mq_response_name: None}
     }
 
     pub fn connect(&mut self, mq_request_name: &str, mq_response_name: &str) -> EExitCode 
@@ -29,6 +31,7 @@ impl MQHandler
         let mq_attributes = MqAttr::new(0, 1, MAX_MESSAGE_SIZE, 0);
         let mq_request_flags = MQ_OFlag::O_CREAT | MQ_OFlag::O_WRONLY;
         let mode = Mode::S_IWUSR | Mode::S_IRUSR;
+        self.mq_request_name = Some(mq_request_name.to_string());
         match mq_open(mq_request_name, mq_request_flags, mode, Some(&mq_attributes))
         {
             Ok(queue) => 
@@ -43,6 +46,7 @@ impl MQHandler
         }
 
         let mq_response_flags = MQ_OFlag::O_CREAT | MQ_OFlag::O_RDONLY;
+        self.mq_response_name = Some(mq_response_name.to_string());
         match mq_open(mq_response_name, mq_response_flags, mode, Some(&mq_attributes))
         {
             Ok(queue) => 
@@ -58,21 +62,38 @@ impl MQHandler
         return exit_code;
     }
 
-    pub fn disconnect(&mut self) -> EExitCode 
+    pub fn disconnect(&mut self, unlink: bool) -> EExitCode 
     {
         let exit_code = EExitCode::SUCCESS;
 
         let _ = match &self.mq_request
         {
-            Some(queue) => unsafe {mq_close(FromRawFd::from_raw_fd(queue.as_raw_fd()))},
+            Some(queue) => 
+            unsafe { 
+                let close_result = mq_close(FromRawFd::from_raw_fd(queue.as_raw_fd()));
+                if unlink
+                { 
+                    let _ = mq_unlink(<Option<String> as Clone>::clone(&self.mq_request_name).unwrap().as_str());
+                }
+                close_result
+            }
             None => Err(Errno::UnknownErrno)
         };
 
         let _ = match &self.mq_response
         {
-            Some(queue) => unsafe {mq_close(FromRawFd::from_raw_fd(queue.as_raw_fd()))},
+            Some(queue) => 
+            unsafe { 
+                let close_result = mq_close(FromRawFd::from_raw_fd(queue.as_raw_fd()));
+                if unlink
+                { 
+                    let _ = mq_unlink(<Option<String> as Clone>::clone(&self.mq_request_name).unwrap().as_str());
+                }
+                close_result
+            }
             None => Err(Errno::UnknownErrno)
         };
+
         return exit_code;
     }
 

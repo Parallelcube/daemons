@@ -33,15 +33,17 @@ class MQHandler:
             exit_code = EExitCode.FAIL
         return exit_code
 
-    def disconnect(self) -> EExitCode: 
+    def disconnect(self, unlink: bool) -> EExitCode: 
         exit_code = EExitCode.SUCCESS
         if self.mq_request:
             self.mq_request.close()
-            self.mq_request.unlink()
+            if unlink:
+                self.mq_request.unlink()
             self.mq_request = None
         if self.mq_response:
             self.mq_response.close()
-            self.mq_response.unlink()
+            if unlink:
+                self.mq_response.unlink()
             self.mq_response = None
         return exit_code
     

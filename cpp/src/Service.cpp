@@ -37,7 +37,7 @@ void Service::stop_listener()
 {
     _listening = false;
     log("Service stop listening");
-    _mq_handler.disconnect();
+    _mq_handler.disconnect(_config.is_host);
 }
 
 int Service::run()
