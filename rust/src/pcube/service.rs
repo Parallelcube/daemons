@@ -1,28 +1,30 @@
 use super::logger::log;
 use super::enums::EExitCode;
+use super::service_config::ServiceConfig;
 use super::mq_handler::MQHandler;
 
 pub struct Service 
 {
+    config: ServiceConfig,
     listening: bool,
     mq_handler: MQHandler
 }
 
 impl Service 
 {
-    pub fn new() -> Self 
+    pub fn new(service_config: ServiceConfig) -> Self 
     {
-        Self {listening: false, mq_handler: MQHandler::new()}
+        Self {config: service_config, listening: false, mq_handler: MQHandler::new()}
     }
 
     pub fn start_listener(&mut self) -> bool 
     {
         self.listening = true;
-        match self.mq_handler.connect("/mq_queue_worker", "/mq_queue_host")
+        match self.mq_handler.connect(<Option<String> as Clone>::clone(&self.config.q_name_host).unwrap().as_str(), <Option<String> as Clone>::clone(&self.config.q_name_worker).unwrap().as_str())
         {
             EExitCode::SUCCESS => 
             {
-                log("Service start listening");
+                log(&format!("Service start listening : host({})", self.config.is_host));
                 return true;
             }
             EExitCode::FAIL => 
@@ -44,6 +46,11 @@ impl Service
         let mut exit_code = EExitCode::SUCCESS;
         if self.start_listener()
         {
+            if self.config.is_host
+            {
+                self.mq_handler.send_wait("task-1");
+            }
+
             while self.listening
             {
                 let (message, status) = self.mq_handler.receive_wait();
@@ -51,8 +58,11 @@ impl Service
                 {
                     EExitCode::SUCCESS => 
                     {
-                        let message = format!("{} processed", message);
-                        self.mq_handler.send_wait(message.as_str());
+                        if !self.config.is_host
+                        {
+                            let message = format!("{} processed", message);
+                            self.mq_handler.send_wait(message.as_str());
+                        }
                         self.stop_listener();
                     }
                     EExitCode::FAIL => 
